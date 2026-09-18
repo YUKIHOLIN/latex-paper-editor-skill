@@ -55,6 +55,16 @@ class MatcherTests(unittest.TestCase):
             self.write_sources(root)
             self.assertEqual(find_matches(root, "not present"), [])
 
+    def test_substring_selection_returns_line_candidate_and_offsets(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.write_sources(root)
+            matches = find_matches(root, "uniquely identifiable")
+            self.assertEqual(len(matches), 1)
+            self.assertEqual(matches[0]["confidence"], "substring")
+            self.assertEqual(matches[0]["sourceText"], "A uniquely identifiable sentence for the preview.")
+            self.assertEqual(matches[0]["selectedText"], "uniquely identifiable")
+
 
 if __name__ == "__main__":
     unittest.main()

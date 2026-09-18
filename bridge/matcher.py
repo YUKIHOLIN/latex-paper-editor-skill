@@ -59,14 +59,35 @@ def find_matches(root: Path, selected_text: str) -> list[dict]:
                         "startLine": start + 1,
                         "endLine": end,
                         "sourceText": source_text,
+                        "selectedText": selected_text.strip(),
                         "confidence": confidence,
                     }
                 )
+    # If the PDF selection is only part of a source line, return that line as
+    # a candidate and let the apply step replace only the selected substring.
+    if not matches or not any(item["confidence"] in {"exact", "normalized"} for item in matches):
+        for source_path in _source_files(root):
+            lines = source_path.read_text(encoding="utf-8").splitlines()
+            relative = source_path.relative_to(root).as_posix()
+            for line_number, line in enumerate(lines, start=1):
+                if line.lstrip().startswith("%"):
+                    continue
+                if selected_raw and selected_raw in line:
+                    matches.append(
+                        {
+                            "file": relative,
+                            "startLine": line_number,
+                            "endLine": line_number,
+                            "sourceText": line,
+                            "selectedText": selected_raw,
+                            "confidence": "substring",
+                        }
+                    )
     # The shortest matching span is the most actionable candidate. Keep only
     # the best confidence for identical spans discovered through multiple
     # window sizes.
     unique: dict[tuple[str, int, int], dict] = {}
-    rank = {"exact": 0, "normalized": 1}
+    rank = {"exact": 0, "normalized": 1, "substring": 2}
     for match in matches:
         key = (match["file"], match["startLine"], match["endLine"])
         current = unique.get(key)

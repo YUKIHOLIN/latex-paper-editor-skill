@@ -44,6 +44,23 @@ class ApplyTests(unittest.TestCase):
                     "new",
                 )
 
+    def test_apply_match_replaces_only_selected_substring(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "paper.tex"
+            source.write_text("A uniquely identifiable sentence.\n", encoding="utf-8")
+            match = {
+                "file": "paper.tex",
+                "startLine": 1,
+                "endLine": 1,
+                "sourceText": "A uniquely identifiable sentence.",
+                "selectedText": "uniquely identifiable",
+            }
+
+            apply_match(root, match, "directly applied")
+
+            self.assertEqual(source.read_text(encoding="utf-8"), "A directly applied sentence.\n")
+
 
 if __name__ == "__main__":
     unittest.main()

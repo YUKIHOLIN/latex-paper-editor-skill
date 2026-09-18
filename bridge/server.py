@@ -53,7 +53,16 @@ def apply_match(root: Path, match: dict, replacement_text: str) -> dict:
     replacement = str(replacement_text).replace("\r\n", "\n").rstrip("\n")
     if had_newline:
         replacement += "\n"
-    updated = lines[: start - 1] + [replacement] + lines[end:]
+    selected = str(match.get("selectedText", expected)).rstrip("\r\n")
+    if selected != expected:
+        if selected not in current:
+            raise ValueError("selected text is no longer present in the source span")
+        replacement_span = current.replace(selected, replacement.rstrip("\n"), 1)
+        if had_newline:
+            replacement_span += "\n"
+        updated = lines[: start - 1] + [replacement_span] + lines[end:]
+    else:
+        updated = lines[: start - 1] + [replacement] + lines[end:]
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=source_path.parent, delete=False) as handle:
         handle.writelines(updated)
         temporary = Path(handle.name)
