@@ -42,8 +42,9 @@ function renderTextLayer(container, textContent, viewport) {
 
 async function renderPdf() {
   try {
+    status.textContent = "Loading updated preview…";
     const pdf = await pdfjsLib.getDocument(`/build/paper.pdf?ts=${Date.now()}`).promise;
-    status.textContent = `${pdf.numPages} page${pdf.numPages === 1 ? "" : "s"} loaded`;
+    status.textContent = `${pdf.numPages} page${pdf.numPages === 1 ? "" : "s"} loaded · updated ${new Date().toLocaleTimeString()}`;
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
       const page = await pdf.getPage(pageNumber);
       const viewport = page.getViewport({ scale: 1.4 });
@@ -93,18 +94,28 @@ async function findSource() {
 
 async function applyAnnotation() {
   const match = lastMatches[Number(matchSelect.value)];
-  const response = await fetch("/api/apply", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ match, replacementText: replacement.value, publish: publish.checked }),
-  });
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || "Annotation could not be applied.");
+  applyButton.disabled = true;
+  status.textContent = "Applying annotation and rebuilding preview…";
+  results.textContent = "Applying source edit…";
+  try {
+    const response = await fetch("/api/apply", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ match, replacementText: replacement.value, publish: publish.checked }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Annotation could not be applied.");
+    }
+    if (data.preview.status !== "ok") {
+      throw new Error(`Source changed, but preview compilation failed:\n${data.preview.output || "check the compiler log"}`);
+    }
+    results.textContent = `Applied to ${data.applied.file}:${data.applied.startLine}-${data.applied.endLine}\nPreview rebuilt: ${data.preview.status}\nPublish: ${data.publish.status}${data.publish.message ? ` (${data.publish.message})` : ""}`;
+    viewer.replaceChildren();
+    await renderPdf();
+  } finally {
+    applyButton.disabled = lastMatches.length === 0 || !replacement.value.trim();
   }
-  results.textContent = `Applied to ${data.applied.file}:${data.applied.startLine}-${data.applied.endLine}\nPreview: ${data.preview.status}\nPublish: ${data.publish.status}${data.publish.message ? ` (${data.publish.message})` : ""}`;
-  viewer.replaceChildren();
-  await renderPdf();
 }
 
 findButton.addEventListener("click", () => findSource().catch((error) => { results.textContent = error.message; }));
