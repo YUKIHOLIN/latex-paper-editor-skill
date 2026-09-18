@@ -6,6 +6,23 @@ This repository packages a portable agent skill and a lightweight PDF.js selecti
 
 This repository is the complete project source for the skill and bridge. It does not require a separate Overleaf checkout. A local LaTeX distribution and CJK fonts are host prerequisites, selected through the system `PATH`.
 
+## Public browser workspace
+
+The ready-to-use beginner interface is available at:
+
+<https://latex-paper-editor.netlify.app>
+
+Upload a PDF and its matching `.tex` file, select text in the PDF, enter the
+replacement, choose the source candidate, and apply the annotation. The site
+processes the files in the browser and downloads the updated `.tex`; it does
+not send manuscript contents to Netlify. Automatic XeLaTeX recompilation is
+available through the local bridge described below.
+
+The repository and the browser workspace are intentionally kept as one
+distribution. Installing the skill from this repository gives an AI agent the
+instructions and local tools; opening the URL gives beginners a zero-install
+preview/edit surface.
+
 ## Install the skill
 
 Clone or download this repository, then install the skill into the agent's skill directory:
@@ -47,7 +64,19 @@ python3 scripts/start_bridge.py
 
 Open <http://127.0.0.1:8765/>. The viewer renders the PDF with PDF.js, lets you select text, and searches the LaTeX source. After you choose a candidate and replacement, **Apply annotation** rechecks and writes that source span, rebuilds the PDF, and can publish to the configured Git remote.
 
-After entering replacement text, click **Find source location**, choose the source candidate, and click **Apply annotation**. The bridge edits the indicated `.tex` lines, runs the preview compiler, and can commit and push the change to the configured GitHub remote without a chat round-trip.
+After entering replacement text, click **Find source location**, choose the source candidate, and click **Apply annotation**. The bridge edits the indicated `.tex` lines, runs the preview compiler, and refreshes the PDF. Publishing is opt-in: enable **Also commit and push to GitHub** only when you explicitly want a remote commit.
+
+## Netlify website
+
+The `site/` directory is a Netlify-ready browser workspace. It asks the user for a PDF and its matching `.tex`, renders the PDF with PDF.js, maps selected text to source lines, applies an in-browser source edit, and downloads the updated `.tex`. Files are not uploaded to Netlify. Deploy the static site with Netlify's dashboard using `site` as the publish directory, or with the Netlify CLI:
+
+```bash
+npx netlify-cli deploy --dir=site --prod
+```
+
+The public static site cannot run XeLaTeX or write arbitrary server files. Use the local bridge in this repository when the updated PDF must be recompiled immediately.
+
+When PyMuPDF is installed (`python3 -m pip install -r requirements.txt`), selecting PDF text also shows the decoded Unicode span, BaseFont/family, Type0/CID subtype, embedded-font status and extracted font file, size, color, style flags, bounding box, and block/line/span content location. PDF.js remains the renderer and selection layer; it does not provide reliable font extraction or CID writing.
 
 ## Codex workflow
 
@@ -67,9 +96,9 @@ The sentence or paragraph to edit.
 
 ## Limitations
 
-PDF text is not a perfect source map. Hyphenation, ligatures, generated text, and TeX macros can prevent exact matching. The bridge reports all candidates when a selection is ambiguous and does not make an automatic edit. SyncTeX files are copied when the compiler produces them, so a SyncTeX-capable editor can provide click-to-source navigation as a complement to this viewer.
+PDF text is not a perfect source map. Hyphenation, ligatures, generated text, and TeX macros can prevent exact matching. The bridge reports all candidates when a selection is ambiguous and waits for the user to choose one before editing. SyncTeX files are copied when the compiler produces them, so a SyncTeX-capable editor can provide click-to-source navigation as a complement to this viewer.
 
-An input PDF without its original LaTeX source cannot be edited as a source-backed manuscript. Use an extracted transcript only for bridge verification, or provide the original source project. Direct PDF overlays are preview-only and require an embedded CJK-capable font for Chinese replacements.
+An input PDF without its original LaTeX source cannot be edited as a source-backed manuscript. Use an extracted transcript only for bridge verification, or provide the original source project. Direct PDF overlays are preview-only and require an embedded CJK-capable font for Chinese replacements. The recommended write-back path is source-backed: update `.tex` and recompile so XeLaTeX/xeCJK performs valid CID and ToUnicode encoding. PyMuPDF can inspect and extract embedded fonts but should not blindly rewrite arbitrary Type0 content streams; pdf-lib is useful for page/object operations but does not provide equivalent CID/ToUnicode font mapping. PDF.js renders and selects text but does not write embedded fonts.
 
 ## Tests
 
@@ -83,7 +112,9 @@ python3 -m unittest discover -s tests -v
 - `bridge/` — local PDF.js viewer and source matcher.
 - `scripts/preview.py` — compile a preview PDF.
 - `scripts/compile_latex.py` — repository-local wrapper that selects `latexmk` or a TeX engine from `PATH`.
+- `scripts/inspect_pdf.py` — inspect PDF text, fonts, CID mapping, and geometry from the command line.
 - `scripts/start_bridge.py` — serve the selection bridge on localhost.
+- `requirements.txt` — optional PyMuPDF dependency for PDF diagnostics.
 - `scripts/font_diagnostics.py` — detect CJK text and available fallback fonts.
 - `templates/cjk-font-fallback.tex` — dynamic XeLaTeX font fallback chain.
 - `installer.py` / `install.py` — install the skill into an agent skill directory.

@@ -1,0 +1,3 @@
+# Optional PDF font/CID inspection layer. The LaTeX bridge itself uses only
+# Python's standard library and does not require this dependency.
+PyMuPDF>=1.23

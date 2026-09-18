@@ -12,11 +12,74 @@ const findButton = document.querySelector("#find");
 const matchSelect = document.querySelector("#match-select");
 const applyButton = document.querySelector("#apply");
 const publish = document.querySelector("#publish");
+const fontInfo = document.querySelector("#font-info");
 let lastMatches = [];
+let selectionContext = null;
+
+function selectionPageAndBox() {
+  const browserSelection = window.getSelection();
+  if (!browserSelection || browserSelection.rangeCount === 0) return null;
+  const range = browserSelection.getRangeAt(0);
+  const node = range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
+    ? range.commonAncestorContainer
+    : range.commonAncestorContainer.parentElement;
+  const page = node?.closest(".page");
+  if (!page) return null;
+  const rangeBox = range.getBoundingClientRect();
+  const pageBox = page.getBoundingClientRect();
+  const scale = Number(page.dataset.scale || "1");
+  if (!rangeBox.width || !rangeBox.height || !scale) return null;
+  return {
+    page: Number(page.dataset.page),
+    bbox: [
+      (rangeBox.left - pageBox.left) / scale,
+      (rangeBox.top - pageBox.top) / scale,
+      (rangeBox.right - pageBox.left) / scale,
+      (rangeBox.bottom - pageBox.top) / scale,
+    ],
+  };
+}
+
+async function inspectSelection() {
+  if (!selectionContext) return;
+  try {
+    const response = await fetch("/api/inspect", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(selectionContext),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "PDF inspection failed.");
+    const spans = (data.spans || []).map((span) => ({
+      text: span.text,
+      font: span.fontFamily,
+      baseFont: span.baseFont,
+      subtype: span.fontSubtype,
+      embedded: span.embedded,
+      fontFile: span.fontFilePath || null,
+      size: span.size,
+      color: span.color,
+      bold: span.bold,
+      italic: span.italic,
+      bbox: span.bbox,
+      location: span.contentLocation,
+      mapping: span.mappingStatus,
+    }));
+    fontInfo.textContent = spans.length
+      ? JSON.stringify({ page: data.page, pageSize: data.pageSize, spans }, null, 2)
+      : "No text span overlaps the selection rectangle.";
+  } catch (error) {
+    fontInfo.textContent = error.message;
+  }
+}
 
 function showSelection() {
   const text = window.getSelection()?.toString().trim() || "";
-  if (text) selected.value = text;
+  if (text) {
+    selected.value = text;
+    selectionContext = selectionPageAndBox();
+    inspectSelection();
+  }
 }
 
 document.addEventListener("mouseup", showSelection);
@@ -51,6 +114,7 @@ async function renderPdf() {
       const wrapper = document.createElement("div");
       wrapper.className = "page";
       wrapper.dataset.page = String(pageNumber);
+      wrapper.dataset.scale = String(viewport.scale);
       const canvas = document.createElement("canvas");
       canvas.width = viewport.width;
       canvas.height = viewport.height;

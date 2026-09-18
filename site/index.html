@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="浏览器端 PDF 与 LaTeX 论文选区编辑工作区。上传 PDF 和 TEX 后，在 PDF 中选中文字并下载更新后的源代码。" />
+    <meta name="robots" content="index,follow" />
+    <title>Paper Bridge · PDF 与 LaTeX 在线工作区</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">PAPER BRIDGE / NETLIFY EDITION</p>
+        <h1>在 PDF 里选字，回到 LaTeX 修改</h1>
+        <p class="subhead">文件只在你的浏览器中处理。先上传同一论文的 PDF 和源文件，再开始选区匹配。</p>
+      </div>
+      <span class="privacy">本地浏览器处理</span>
+    </header>
+
+    <main>
+      <section class="upload-card" aria-labelledby="upload-title">
+        <div>
+          <p class="step">01 / WORKSPACE</p>
+          <h2 id="upload-title">上传论文文件</h2>
+          <p class="muted">需要一份 PDF 和对应的 `.tex` 源文件。文件不会上传到 Netlify。</p>
+        </div>
+        <div class="upload-grid">
+          <label class="dropzone" for="pdf-file">
+            <span class="file-kind">PDF</span>
+            <strong>选择预览 PDF</strong>
+            <small id="pdf-name">尚未选择文件</small>
+            <input id="pdf-file" type="file" accept="application/pdf,.pdf" />
+          </label>
+          <label class="dropzone" for="tex-file">
+            <span class="file-kind tex">TEX</span>
+            <strong>选择 LaTeX 源文件</strong>
+            <small id="tex-name">尚未选择文件</small>
+            <input id="tex-file" type="file" accept=".tex,text/plain" />
+          </label>
+        </div>
+        <div class="upload-status" id="upload-status" role="status">等待上传 PDF 和 TEX</div>
+      </section>
+
+      <section id="workspace" class="workspace locked" aria-label="论文编辑工作区" aria-disabled="true">
+        <div class="viewer-panel">
+          <div class="panel-heading">
+            <div><p class="step">02 / SELECT</p><h2>PDF 预览</h2></div>
+            <span id="pdf-status" class="status-pill">等待文件</span>
+          </div>
+          <div id="viewer" class="viewer"><p class="empty">上传文件后，PDF 会显示在这里。</p></div>
+        </div>
+
+        <aside class="editor-panel">
+          <p class="step">03 / APPLY</p>
+          <h2>修改源代码</h2>
+          <label for="selected">PDF 选中文字</label>
+          <textarea id="selected" rows="4" placeholder="在左侧 PDF 中选择文字…"></textarea>
+          <label for="replacement">替换文字</label>
+          <textarea id="replacement" rows="4" placeholder="输入希望写回 LaTeX 的文字…"></textarea>
+          <button id="find" type="button" disabled>查找源代码位置</button>
+          <label for="match-select">源代码候选</label>
+          <select id="match-select" disabled></select>
+          <button id="apply" type="button" class="primary" disabled>应用到源代码</button>
+          <button id="download-tex" type="button" disabled>下载更新后的 TEX</button>
+          <pre id="results" class="result" aria-live="polite">上传文件后开始操作。</pre>
+          <div class="note">Netlify 版本会在浏览器中修改 TEX 并提供下载。要重新生成 PDF，请使用仓库内的本地 LaTeX 桥接器；公网静态站点不会执行 TeX 编译。</div>
+        </aside>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

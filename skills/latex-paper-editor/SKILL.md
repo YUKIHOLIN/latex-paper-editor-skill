@@ -5,6 +5,26 @@ description: Edit research papers in LaTeX, compile preview PDFs, map PDF select
 
 # LaTeX Paper Editor
 
+## Distribution and beginner entry point
+
+This skill is distributed from the single canonical repository:
+
+<https://github.com/YUKIHOLIN/latex-paper-editor-skill>
+
+When a user asks to install or use this skill, keep this repository as the
+project toolkit and install `skills/latex-paper-editor` into the host agent's
+skill directory. The matching no-install browser workspace is available at:
+
+<https://latex-paper-editor.netlify.app>
+
+For a beginner who has a PDF and its matching `.tex` file, open the browser
+workspace, upload both files, select text in the PDF, enter the replacement,
+find and choose the source candidate, then apply the annotation. The browser
+workspace edits and downloads the `.tex` file locally. It does not upload
+paper contents to Netlify. To rebuild a PDF automatically after an edit, run
+the local bridge from the cloned repository with `python3 scripts/start_bridge.py`;
+the public static site cannot run XeLaTeX.
+
 Use this skill for paper work when the project contains `paper.tex`, another `.tex` root, or the bridge files from this repository.
 
 ## Workflow
@@ -38,6 +58,8 @@ python3 scripts/start_bridge.py
 Open `http://127.0.0.1:8765/`. A user can select rendered text, enter a replacement, choose the source candidate, and click **Apply annotation**. The bridge rechecks the source span, edits the `.tex` file, recompiles the PDF, and can commit and push the change to the configured GitHub remote.
 
 The bridge writes only the selected `.tex` span after rechecking its current contents. It can return multiple candidates; choose the correct candidate before applying. When there is no match or the source changed after selection, stop and ask the user to select again or identify the source region. Stable markers can disambiguate macro-heavy passages:
+
+If PyMuPDF is installed, the browser also reports the selected PDF span's decoded Unicode text, BaseFont/family, Type0/CID encoding, embedded font extraction path, size, color, style flags, bounding box, and block/line/span location. Treat this as diagnostics: write replacements through `.tex` and recompile so the TeX engine performs valid font fallback and CID encoding. Do not claim that PDF.js alone can rewrite arbitrary embedded Type0 fonts.
 
 ```tex
 % paper:id=unique-region-name

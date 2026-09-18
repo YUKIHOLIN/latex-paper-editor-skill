@@ -3,7 +3,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from bridge.server import match_payload, status_payload
+try:
+    import fitz
+except ImportError:  # pragma: no cover - optional dependency
+    fitz = None
+
+from bridge.server import inspect_payload, match_payload, status_payload
 
 
 class ServerPayloadTests(unittest.TestCase):
@@ -32,6 +37,22 @@ class ServerPayloadTests(unittest.TestCase):
         payload = status_payload(self.root)
         self.assertEqual(payload["pdf"], "build/paper.pdf")
         self.assertEqual(payload["sourceRoot"], ".")
+
+    @unittest.skipUnless(fitz is not None, "PyMuPDF is optional")
+    def test_inspect_payload_returns_font_and_geometry_metadata(self):
+        build = self.root / "build"
+        build.mkdir()
+        document = fitz.open()
+        page = document.new_page(width=300, height=200)
+        page.insert_text((40, 80), "Bridge text", fontname="helv", fontsize=12)
+        document.save(build / "paper.pdf")
+        document.close()
+
+        payload = inspect_payload(self.root, {"page": 1, "bbox": [20, 40, 180, 100]})
+
+        self.assertEqual(payload["engine"], "PyMuPDF")
+        self.assertEqual(payload["spans"][0]["text"], "Bridge text")
+        self.assertIn("fontFamily", payload["spans"][0])
 
 
 if __name__ == "__main__":

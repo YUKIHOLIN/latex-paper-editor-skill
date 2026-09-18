@@ -13,6 +13,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from .matcher import find_matches
+from .pdf_inspector import PdfInspectionError, inspect_pdf
 
 
 def status_payload(root: Path) -> dict:
@@ -25,6 +26,40 @@ def match_payload(root: Path, payload: dict) -> dict:
         selected_text = ""
     selected_text = selected_text[:20_000]
     return {"matches": find_matches(root, selected_text)}
+
+
+def inspect_payload(root: Path, payload: dict) -> dict:
+    """Inspect PDF text spans for the selected page rectangle."""
+    relative_pdf = Path(str(payload.get("pdf", "build/paper.pdf")))
+    pdf_path = (root / relative_pdf).resolve()
+    try:
+        pdf_path.relative_to(root.resolve())
+    except ValueError as exc:
+        raise ValueError("PDF path escapes workspace") from exc
+    if pdf_path.suffix.lower() != ".pdf" or not pdf_path.is_file():
+        raise ValueError("PDF path is not an existing PDF inside the workspace")
+    try:
+        page = int(payload.get("page", 1))
+    except (TypeError, ValueError) as exc:
+        raise ValueError("page must be an integer") from exc
+    raw_bbox = payload.get("bbox")
+    bbox = None
+    if raw_bbox is not None:
+        if not isinstance(raw_bbox, list) or len(raw_bbox) != 4:
+            raise ValueError("bbox must be a four-number list")
+        try:
+            bbox = [float(value) for value in raw_bbox]
+        except (TypeError, ValueError) as exc:
+            raise ValueError("bbox must contain numbers") from exc
+    report = inspect_pdf(pdf_path, page_number=page, bbox=bbox)
+    for span in report.get("spans", []):
+        path = span.get("fontFilePath")
+        if path:
+            try:
+                span["fontFilePath"] = Path(path).resolve().relative_to(root.resolve()).as_posix()
+            except ValueError:
+                span["fontFilePath"] = None
+    return report
 
 
 def apply_match(root: Path, match: dict, replacement_text: str) -> dict:
@@ -148,7 +183,7 @@ class BridgeHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802 - stdlib handler API
         path = urlparse(self.path).path
-        if path not in {"/api/match", "/api/preview", "/api/apply"}:
+        if path not in {"/api/match", "/api/preview", "/api/apply", "/api/inspect"}:
             self._json(404, {"error": "not found"})
             return
         try:
@@ -157,7 +192,16 @@ class BridgeHandler(SimpleHTTPRequestHandler):
         except (ValueError, json.JSONDecodeError):
             self._json(400, {"error": "invalid JSON"})
             return
-        result = match_payload(self.root, payload if isinstance(payload, dict) else {})
+        payload = payload if isinstance(payload, dict) else {}
+        if path == "/api/inspect":
+            try:
+                self._json(200, inspect_payload(self.root, payload))
+            except PdfInspectionError as exc:
+                self._json(501, {"error": str(exc)})
+            except (ValueError, OSError) as exc:
+                self._json(400, {"error": str(exc)})
+            return
+        result = match_payload(self.root, payload)
         if path == "/api/preview":
             result["replacementText"] = str(payload.get("replacementText", ""))[:20_000]
             result["writesPerformed"] = False
@@ -165,7 +209,7 @@ class BridgeHandler(SimpleHTTPRequestHandler):
             try:
                 applied = apply_match(self.root, payload.get("match", {}), str(payload.get("replacementText", ""))[:20_000])
                 result = {"applied": applied, "preview": run_preview(self.root)}
-                if payload.get("publish", True):
+                if payload.get("publish", False):
                     result["publish"] = publish_changes(self.root, applied["file"])
                 else:
                     result["publish"] = {"status": "skipped", "message": "publish disabled"}

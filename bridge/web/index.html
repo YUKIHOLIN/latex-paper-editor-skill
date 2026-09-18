@@ -25,9 +25,11 @@
         <button id="find" type="button">Find source location</button>
         <label for="match-select">Source candidate</label>
         <select id="match-select" disabled></select>
-        <label class="check"><input id="publish" type="checkbox" checked /> Apply, rebuild, and push to GitHub</label>
+        <label class="check"><input id="publish" type="checkbox" /> Also commit and push to GitHub</label>
         <button id="apply" type="button" disabled>Apply annotation</button>
         <pre id="results" aria-live="polite">Select text, enter a replacement, then find its source.</pre>
+        <h2>PDF text/font diagnostics</h2>
+        <pre id="font-info" aria-live="polite">Select PDF text to inspect its font, encoding, color, and geometry.</pre>
         <p class="hint">The bridge rechecks the selected source span, edits the `.tex` file, rebuilds the PDF, and optionally commits and pushes the change.</p>
       </aside>
     </main>

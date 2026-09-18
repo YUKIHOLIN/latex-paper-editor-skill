@@ -10,6 +10,16 @@ cd latex-paper-editor-skill
 python3 install.py --target ~/.codex/skills
 ```
 
+仓库是唯一的技能分发地址：
+
+<https://github.com/YUKIHOLIN/latex-paper-editor-skill>
+
+如果只是想立即试用，不安装本地环境也可以打开公网工作区：
+
+<https://latex-paper-editor.netlify.app>
+
+上传 PDF 和对应的 `.tex` 后，即可在 PDF 中选择文字、输入替换内容、选择源代码候选并下载更新后的 TEX。公网工作区在浏览器本地处理文件；需要自动重新编译 PDF 时，再克隆仓库并启动本地桥接服务。
+
 将 `~/.codex/skills` 替换为目标 Agent 的技能目录即可。没有技能目录的 Agent，可以把 `skills/latex-paper-editor/SKILL.md` 作为项目指令或系统提示，并保留整个仓库供 Agent 执行脚本。
 
 ## 支持的软件和平台
@@ -69,7 +79,43 @@ python3 scripts/start_bridge.py
 http://127.0.0.1:8765/
 ```
 
-在 PDF 中选中文字，输入替换内容，点击 **Find source location**，选择源代码候选，然后点击 **Apply annotation**。桥接器会直接修改 `.tex`、重新编译 PDF，并在勾选发布选项时自动提交和推送到已配置的 GitHub 远程仓库。
+在 PDF 中选中文字，输入替换内容，点击 **Find source location**，选择源代码候选，然后点击 **Apply annotation**。桥接器会直接修改 `.tex`、重新编译 PDF，并立即刷新页面。**Also commit and push to GitHub** 默认不勾选；只有明确需要发布时才勾选。
+
+## Netlify 公网版本
+
+仓库中的 `site/` 是可部署到 Netlify 的静态网站。用户打开网站后先上传 PDF 和对应的 `.tex`，然后才能使用 PDF 选区、源代码候选、浏览器内修改和下载更新后的 TEX。文件只在用户浏览器中处理，不会上传到 Netlify。
+
+在 Netlify 控制台新建站点时，将发布目录设置为 `site`；或者在仓库根目录运行：
+
+```bash
+npx netlify-cli deploy --dir=site --prod
+```
+
+公网版本不能在 Netlify 静态页面中执行 XeLaTeX，因此修改后不会直接生成新 PDF。需要即时重新编译时，在本地仓库运行 `python3 scripts/start_bridge.py`，再用下载的 TEX 编译预览。
+
+### PDF 字体和 CID 诊断
+
+安装可选依赖后：
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+在 PDF 中选中文字后，右侧的诊断框会显示：
+
+- 字体名称、BaseFont、字体家族、Type1/TrueType/Type0/CID 子类型和编码；
+- 是否嵌入字体，以及在 `build/pdf-fonts/` 提取出的字体文件；
+- 字号、RGB 颜色、透明度、粗体/斜体/等宽/衬线标志；
+- PDF 页面坐标 bounding box、文字基线 origin 和 block/line/span 内容位置；
+- PyMuPDF 根据 ToUnicode/CID 映射还原后的 Unicode 文本和映射状态。
+
+也可以直接输出整页诊断：
+
+```bash
+python3 scripts/inspect_pdf.py build/paper.pdf --page 1
+```
+
+能力边界：PDF.js 负责渲染和选区；PyMuPDF 负责 PDF 字体、坐标和 ToUnicode 诊断；pdf-lib 适合浏览器端页面/对象操作但不适合可靠的 CID 字体写回。对于修改文字，推荐让桥接器更新 `.tex` 后由 XeLaTeX/xeCJK 重编译，这样中英文混排会重新执行合法的字体回退和 CID 编码。
 
 ## 中文和多语言字体
 
