@@ -1,0 +1,17 @@
+% Include this file from an XeLaTeX document after loading fontspec and xeCJK.
+% The first installed family in each chain is selected at compile time.
+\IfFontExistsTF{Noto Serif CJK SC}{\setCJKmainfont{Noto Serif CJK SC}}{
+  \IfFontExistsTF{Noto Serif CJK JP}{\setCJKmainfont{Noto Serif CJK JP}}{
+    \IfFontExistsTF{Source Han Serif SC}{\setCJKmainfont{Source Han Serif SC}}{
+      \IfFontExistsTF{Microsoft YaHei}{\setCJKmainfont{Microsoft YaHei}}{
+        \IfFontExistsTF{SimSun}{\setCJKmainfont{SimSun}}{\setCJKmainfont{Droid Sans Fallback}}
+      }
+    }
+  }
+}
+\IfFontExistsTF{Noto Sans CJK SC}{\setCJKsansfont{Noto Sans CJK SC}}{
+  \IfFontExistsTF{Noto Sans CJK JP}{\setCJKsansfont{Noto Sans CJK JP}}{
+    \IfFontExistsTF{Source Han Sans SC}{\setCJKsansfont{Source Han Sans SC}}{\setCJKsansfont{Droid Sans Fallback}}
+  }
+}
+\IfFontExistsTF{Noto Sans Mono CJK SC}{\setCJKmonofont{Noto Sans Mono CJK SC}}{}

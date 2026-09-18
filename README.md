@@ -35,7 +35,7 @@ python3 scripts/preview.py
 
 The script writes `build/paper.pdf`. It compiles into a temporary directory first, so a failed build preserves the previous good PDF.
 
-For Chinese text, include `ctex`, `xeCJK`, or `fontspec` in the LaTeX preamble. The preview script automatically selects XeLaTeX for non-ASCII source and stops instead of producing a PDF with missing glyphs when CJK support is absent.
+For Chinese text, include `ctex`, `xeCJK`, or `fontspec` in the LaTeX preamble. The preview script automatically selects XeLaTeX for non-ASCII source and prints the first available CJK font from a broad fallback list. Use [`templates/cjk-font-fallback.tex`](templates/cjk-font-fallback.tex) with `fontspec`/`xeCJK` when a document needs explicit cross-platform font selection. No package can guarantee every Unicode glyph without a font that contains that glyph, so the script reports missing CJK font coverage before compilation.
 
 ## Start the selection bridge
 
@@ -81,5 +81,7 @@ python3 -m unittest discover -s tests -v
 - `bridge/` — local PDF.js viewer and source matcher.
 - `scripts/preview.py` — compile a preview PDF.
 - `scripts/start_bridge.py` — serve the selection bridge on localhost.
+- `scripts/font_diagnostics.py` — detect CJK text and available fallback fonts.
+- `templates/cjk-font-fallback.tex` — dynamic XeLaTeX font fallback chain.
 - `installer.py` / `install.py` — install the skill into an agent skill directory.
 - `paper.tex` — smoke-test manuscript.

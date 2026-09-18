@@ -10,6 +10,11 @@ import tempfile
 import re
 from pathlib import Path
 
+try:
+    from scripts.font_diagnostics import diagnostic
+except ModuleNotFoundError:  # direct execution: `python3 scripts/preview.py`
+    from font_diagnostics import diagnostic
+
 
 WORKSPACE = Path(__file__).resolve().parents[1]
 COMPILER = Path("/mnt/c/Users/Yukiho/.codex/plugins/cache/openai-bundled/latex/0.2.6/scripts/compile_latex.py")
@@ -33,6 +38,9 @@ def main() -> int:
     root = WORKSPACE / "paper.tex"
     source = root.read_text(encoding="utf-8")
     engine = choose_engine(source)
+    font_info = diagnostic(source)
+    if font_info["hasCjk"]:
+        print(font_info["message"])
     configuration_error = cjk_support_error(source)
     if configuration_error:
         print(configuration_error, file=sys.stderr)
