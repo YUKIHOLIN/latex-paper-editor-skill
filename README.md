@@ -4,7 +4,7 @@ This repository packages a portable agent skill and a lightweight PDF.js selecti
 
 完整的安装、平台支持、编译软件和字体说明见 [USAGE.md](USAGE.md)。
 
-The Overleaf Toolkit checkout used during development is separate from this project. It is optional and only needed when running a local Overleaf Community Edition server.
+This repository is the complete project source for the skill and bridge. It does not require a separate Overleaf checkout. A local LaTeX distribution and CJK fonts are host prerequisites, selected through the system `PATH`.
 
 ## Install the skill
 
@@ -37,7 +37,7 @@ python3 scripts/preview.py
 
 The script writes `build/paper.pdf`. It compiles into a temporary directory first, so a failed build preserves the previous good PDF.
 
-For Chinese text, include `ctex`, `xeCJK`, or `fontspec` in the LaTeX preamble. The preview script automatically selects XeLaTeX for non-ASCII source and prints the first available CJK font from a broad fallback list. Use [`templates/cjk-font-fallback.tex`](templates/cjk-font-fallback.tex) with `fontspec`/`xeCJK` when a document needs explicit cross-platform font selection. No package can guarantee every Unicode glyph without a font that contains that glyph, so the script reports missing CJK font coverage before compilation.
+For Chinese text, include `ctex`, `xeCJK`, or `fontspec` in the LaTeX preamble. The preview script automatically selects XeLaTeX for non-ASCII source, prints the first available CJK font from a broad fallback list, and adds the repository CJK preamble after `\documentclass` when an annotation introduces Chinese into a source that lacks one. Use [`templates/cjk-font-fallback.tex`](templates/cjk-font-fallback.tex) with `fontspec`/`xeCJK` when a document needs explicit cross-platform font selection. No package can guarantee every Unicode glyph without a font that contains that glyph, so the script reports missing CJK font coverage before compilation.
 
 ## Start the selection bridge
 
@@ -45,7 +45,7 @@ For Chinese text, include `ctex`, `xeCJK`, or `fontspec` in the LaTeX preamble. 
 python3 scripts/start_bridge.py
 ```
 
-Open <http://127.0.0.1:8765/>. The viewer renders the PDF with PDF.js, lets you select text, and searches the LaTeX source. It never writes source files.
+Open <http://127.0.0.1:8765/>. The viewer renders the PDF with PDF.js, lets you select text, and searches the LaTeX source. After you choose a candidate and replacement, **Apply annotation** rechecks and writes that source span, rebuilds the PDF, and can publish to the configured Git remote.
 
 After entering replacement text, click **Find source location**, choose the source candidate, and click **Apply annotation**. The bridge edits the indicated `.tex` lines, runs the preview compiler, and can commit and push the change to the configured GitHub remote without a chat round-trip.
 
@@ -82,6 +82,7 @@ python3 -m unittest discover -s tests -v
 - `skills/latex-paper-editor/SKILL.md` — portable agent instructions.
 - `bridge/` — local PDF.js viewer and source matcher.
 - `scripts/preview.py` — compile a preview PDF.
+- `scripts/compile_latex.py` — repository-local wrapper that selects `latexmk` or a TeX engine from `PATH`.
 - `scripts/start_bridge.py` — serve the selection bridge on localhost.
 - `scripts/font_diagnostics.py` — detect CJK text and available fallback fonts.
 - `templates/cjk-font-fallback.tex` — dynamic XeLaTeX font fallback chain.

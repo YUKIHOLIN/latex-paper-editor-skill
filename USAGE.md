@@ -55,6 +55,7 @@ python3 scripts/preview.py
 ```
 
 生成文件位于 `build/paper.pdf`。编译失败时，脚本会保留上一次成功的 PDF。
+预览脚本调用仓库内的 `scripts/compile_latex.py`，优先使用 `latexmk`，否则直接调用 `xelatex`、`pdflatex` 或 `lualatex`；不会依赖 Codex 安装目录中的脚本。
 
 启动 PDF 选区桥接：
 
@@ -97,7 +98,7 @@ http://127.0.0.1:8765/
 - Droid Sans Fallback
 - AR PL SungtiL GB
 
-预览脚本发现非 ASCII 字符时会自动选择 XeLaTeX。没有 CJK 宏包时会停止并提示配置，避免生成中文空白的 PDF。冷门 Unicode 字符仍需要系统安装包含对应字形的字体。
+预览脚本发现非 ASCII 字符时会自动选择 XeLaTeX。若源文件没有 CJK 宏包，脚本会在 `\documentclass` 后自动加入仓库内的 `fontspec`、`xeCJK` 和字体回退模板；编译失败时会恢复原文件并保留上一次成功的 PDF。冷门 Unicode 字符仍需要系统安装包含对应字形的字体。
 
 ## Agent 使用示例
 

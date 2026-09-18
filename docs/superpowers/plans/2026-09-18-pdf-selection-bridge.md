@@ -4,7 +4,7 @@
 
 **Goal:** Build a lightweight local PDF.js selection bridge that maps selected rendered text to LaTeX source candidates, supports Codex-led edits, and previews the updated PDF.
 
-**Architecture:** A Python standard-library bridge serves a browser viewer and JSON matching endpoint. The matcher searches `.tex` files using exact and normalized text, while optional `paper:id` markers disambiguate macro-heavy passages. Codex remains the only component that writes source files; compilation is delegated to the local LaTeX helper.
+**Architecture:** A Python standard-library bridge serves a browser viewer and JSON matching endpoint. The matcher searches `.tex` files using exact, normalized, and substring text, while optional `paper:id` markers disambiguate macro-heavy passages. The bridge rechecks and applies confirmed replacements, then invokes the repository-local LaTeX wrapper.
 
 **Tech Stack:** Python 3 standard library, `unittest`, HTML/CSS/JavaScript, PDF.js loaded by the browser, LaTeX/Tectonic or TeX Live.
 
@@ -12,8 +12,8 @@
 
 ## Global Constraints
 
-- Keep manuscripts in `/mnt/c/Users/Yukiho/overleaf-papers` and Toolkit files in `/mnt/c/Users/Yukiho/overleaf-toolkit`.
-- The bridge must not mutate `.tex` files.
+- Keep manuscripts, scripts, templates, and bridge assets in this repository.
+- The bridge may mutate `.tex` only after a source candidate is selected and its contents are rechecked.
 - Ambiguous or unmatched selections must be reported without choosing a source location automatically.
 - Build artifacts stay under `build/` and are ignored by git.
 
@@ -74,8 +74,8 @@
 - Create: `.gitignore`
 - Modify: `bridge/server.py`
 
-- [ ] **Step 1: Add a preview command that calls the bundled `compile_latex.py` helper when available and preserves the previous PDF on compile failure.
+- [ ] **Step 1: Add a preview command that calls the repository-local `scripts/compile_latex.py` wrapper and preserves the previous PDF on compile failure.
 - [ ] **Step 2: Add a bridge launcher serving the workspace on `127.0.0.1:8765`.
-- [ ] **Step 3: Document the daily workflow, Codex edit prompts, marker syntax, Toolkit relationship, and selection limitations.
+- [ ] **Step 3: Document the daily workflow, Codex edit prompts, marker syntax, repository-local compiler, and selection limitations.
 - [ ] **Step 4: Run the full test suite, compile `paper.tex`, and verify `build/paper.pdf`.
 - [ ] **Step 5: Commit the completed bridge setup.

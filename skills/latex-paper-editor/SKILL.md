@@ -21,7 +21,7 @@ Use this skill for paper work when the project contains `paper.tex`, another `.t
 5. Report compiler errors with the source file and line information. Do not claim a PDF is current if compilation failed.
 6. Open the generated `build/paper.pdf` beside the edited source when the host agent supports file panels.
 
-For Chinese or other non-ASCII text, use XeLaTeX and configure the preamble with `ctex`, `xeCJK`, or `fontspec`. The preview script detects Unicode text, reports available CJK fallback fonts, and stops with an actionable error when no CJK-capable package is present.
+For Chinese or other non-ASCII text, use XeLaTeX and configure the preamble with `ctex`, `xeCJK`, or `fontspec`. The preview script detects Unicode text, reports available CJK fallback fonts, and automatically adds the repository CJK preamble after `\documentclass` when an annotation introduces Unicode into a source that lacks one. If no document class is present, report the actionable configuration error instead of claiming the PDF is current.
 
 For explicit cross-platform font selection, load the bundled `assets/cjk-font-fallback.tex` after `fontspec` and `xeCJK`. It checks these families in order: Noto Serif/Sans CJK, Source Han Serif/Sans, Microsoft YaHei, SimSun, and Droid Sans Fallback. The same fallback file is included in the installed skill, so it remains available after downloading or installing this repository.
 
