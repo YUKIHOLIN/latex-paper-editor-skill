@@ -21,6 +21,8 @@ Use this skill for paper work when the project contains `paper.tex`, another `.t
 5. Report compiler errors with the source file and line information. Do not claim a PDF is current if compilation failed.
 6. Open the generated `build/paper.pdf` beside the edited source when the host agent supports file panels.
 
+For Chinese or other non-ASCII text, use XeLaTeX and configure the preamble with `ctex`, `xeCJK`, or `fontspec`. The preview script detects Unicode text and stops with an actionable error when no CJK-capable package is present, preventing a PDF that silently omits the edited text.
+
 ## PDF selection bridge
 
 If this repository's bridge is available, start it with:
@@ -38,6 +40,8 @@ The bridge is advisory: it never writes `.tex` files and it can return multiple 
 Text to edit.
 % paper:end=unique-region-name
 ```
+
+If the input is a PDF without its original `.tex` source, do not present PDF overlay edits as source-backed LaTeX edits. Create an extracted transcript only for matching tests, or ask for the source project. Direct PDF redaction/insertion must embed a CJK-capable font and should be labeled as a preview-only PDF edit.
 
 ## Paper editing rules
 

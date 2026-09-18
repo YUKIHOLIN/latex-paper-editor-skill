@@ -35,6 +35,8 @@ python3 scripts/preview.py
 
 The script writes `build/paper.pdf`. It compiles into a temporary directory first, so a failed build preserves the previous good PDF.
 
+For Chinese text, include `ctex`, `xeCJK`, or `fontspec` in the LaTeX preamble. The preview script automatically selects XeLaTeX for non-ASCII source and stops instead of producing a PDF with missing glyphs when CJK support is absent.
+
 ## Start the selection bridge
 
 ```bash
@@ -64,6 +66,8 @@ The sentence or paragraph to edit.
 ## Limitations
 
 PDF text is not a perfect source map. Hyphenation, ligatures, generated text, and TeX macros can prevent exact matching. The bridge reports all candidates when a selection is ambiguous and does not make an automatic edit. SyncTeX files are copied when the compiler produces them, so a SyncTeX-capable editor can provide click-to-source navigation as a complement to this viewer.
+
+An input PDF without its original LaTeX source cannot be edited as a source-backed manuscript. Use an extracted transcript only for bridge verification, or provide the original source project. Direct PDF overlays are preview-only and require an embedded CJK-capable font for Chinese replacements.
 
 ## Tests
 
