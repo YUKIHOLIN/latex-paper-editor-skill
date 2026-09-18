@@ -13,12 +13,15 @@ class InstallerTests(unittest.TestCase):
             skill = source / "skills" / "latex-paper-editor"
             skill.mkdir(parents=True)
             (skill / "SKILL.md").write_text("---\nname: latex-paper-editor\n---\n", encoding="utf-8")
+            (skill / "assets").mkdir()
+            (skill / "assets" / "cjk-font-fallback.tex").write_text("fallback", encoding="utf-8")
             (source / "paper.tex").write_text("sample", encoding="utf-8")
 
             installed = copy_skill(source, target)
 
             self.assertEqual(installed, target / "latex-paper-editor")
             self.assertTrue((installed / "SKILL.md").is_file())
+            self.assertTrue((installed / "assets" / "cjk-font-fallback.tex").is_file())
             self.assertFalse((target / "paper.tex").exists())
 
 
