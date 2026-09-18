@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Codex Paper Preview</title>
+    <link rel="stylesheet" href="/bridge/web/styles.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Codex Paper Preview</h1>
+        <p id="status">Loading preview…</p>
+      </div>
+      <a id="direct-pdf" href="/build/paper.pdf" target="_blank" rel="noreferrer">Open PDF directly</a>
+    </header>
+    <main>
+      <section id="viewer" aria-label="PDF viewer"></section>
+      <aside>
+        <h2>Edit selected text</h2>
+        <label for="selected">Selected PDF text</label>
+        <textarea id="selected" rows="7" placeholder="Select text in the PDF text layer…"></textarea>
+        <label for="replacement">Replacement text</label>
+        <textarea id="replacement" rows="7" placeholder="Type the desired replacement…"></textarea>
+        <button id="find" type="button">Find source location</button>
+        <button id="copy" type="button" disabled>Copy Codex edit prompt</button>
+        <pre id="results" aria-live="polite">Select text, enter a replacement, then find its source.</pre>
+        <p class="hint">The bridge never writes source files. Copy the candidate prompt into Codex; Codex applies the edit and rebuilds the PDF.</p>
+      </aside>
+    </main>
+    <script type="module" src="/bridge/web/app.js"></script>
+  </body>
+</html>
