@@ -2,6 +2,8 @@
 
 This repository packages a portable agent skill and a lightweight PDF.js selection bridge for editing research papers in LaTeX. It works with Codex and can be adapted to Doubao, Kimi, Hermes, DeepSeek, Harness, and other agents that can load Markdown instructions and run local commands.
 
+完整的安装、平台支持、编译软件和字体说明见 [USAGE.md](USAGE.md)。
+
 The Overleaf Toolkit checkout used during development is separate from this project. It is optional and only needed when running a local Overleaf Community Edition server.
 
 ## Install the skill
