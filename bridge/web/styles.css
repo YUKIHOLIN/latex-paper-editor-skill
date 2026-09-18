@@ -16,6 +16,9 @@ aside { position: sticky; top: 1rem; align-self: start; padding: 1rem; backgroun
 h2 { margin: 0 0 1rem; font-size: 1rem; }
 label { display: block; margin: .7rem 0 .3rem; font-size: .85rem; font-weight: 600; }
 textarea { width: 100%; resize: vertical; padding: .6rem; font: .85rem ui-monospace, monospace; border: 1px solid #ccd3dd; border-radius: .3rem; }
+select { width: 100%; padding: .55rem; border: 1px solid #ccd3dd; border-radius: .3rem; background: #fff; }
+.check { display: flex; align-items: center; gap: .45rem; font-weight: 400; }
+.check input { width: auto; }
 button { width: 100%; margin-top: .7rem; padding: .6rem; border: 0; border-radius: .3rem; background: #1769aa; color: #fff; cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .5; }
 pre { min-height: 5rem; padding: .7rem; overflow: auto; white-space: pre-wrap; background: #f2f4f7; font-size: .75rem; }

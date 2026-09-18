@@ -68,7 +68,7 @@ python3 scripts/start_bridge.py
 http://127.0.0.1:8765/
 ```
 
-在 PDF 中选中文字，输入替换内容，点击 **Find source location**，再点击 **Copy Codex edit prompt**，将提示粘贴到 Agent 对话框。Agent 修改 `.tex` 文件后重新运行预览编译。
+在 PDF 中选中文字，输入替换内容，点击 **Find source location**，选择源代码候选，然后点击 **Apply annotation**。桥接器会直接修改 `.tex`、重新编译 PDF，并在勾选发布选项时自动提交和推送到已配置的 GitHub 远程仓库。
 
 ## 中文和多语言字体
 

@@ -47,7 +47,7 @@ python3 scripts/start_bridge.py
 
 Open <http://127.0.0.1:8765/>. The viewer renders the PDF with PDF.js, lets you select text, and searches the LaTeX source. It never writes source files.
 
-After entering replacement text, click **Find source location**, then **Copy Codex edit prompt**. Paste that prompt into the Codex chat. Codex can then edit the indicated `.tex` lines, run `python3 scripts/preview.py`, and reopen the updated PDF side-by-side with the source.
+After entering replacement text, click **Find source location**, choose the source candidate, and click **Apply annotation**. The bridge edits the indicated `.tex` lines, runs the preview compiler, and can commit and push the change to the configured GitHub remote without a chat round-trip.
 
 ## Codex workflow
 

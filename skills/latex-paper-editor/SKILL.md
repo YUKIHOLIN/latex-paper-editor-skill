@@ -35,9 +35,9 @@ If this repository's bridge is available, start it with:
 python3 scripts/start_bridge.py
 ```
 
-Open `http://127.0.0.1:8765/`. A user can select rendered text, enter a replacement, and copy a source-aware edit prompt. Use the reported file and line span as the edit target, then compile again.
+Open `http://127.0.0.1:8765/`. A user can select rendered text, enter a replacement, choose the source candidate, and click **Apply annotation**. The bridge rechecks the source span, edits the `.tex` file, recompiles the PDF, and can commit and push the change to the configured GitHub remote.
 
-The bridge is advisory: it never writes `.tex` files and it can return multiple candidates. When there is no match or more than one plausible match, ask the user to identify the source region or add stable markers:
+The bridge writes only the selected `.tex` span after rechecking its current contents. It can return multiple candidates; choose the correct candidate before applying. When there is no match or the source changed after selection, stop and ask the user to select again or identify the source region. Stable markers can disambiguate macro-heavy passages:
 
 ```tex
 % paper:id=unique-region-name

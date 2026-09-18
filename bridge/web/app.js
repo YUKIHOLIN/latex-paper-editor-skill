@@ -9,7 +9,9 @@ const selected = document.querySelector("#selected");
 const replacement = document.querySelector("#replacement");
 const results = document.querySelector("#results");
 const findButton = document.querySelector("#find");
-const copyButton = document.querySelector("#copy");
+const matchSelect = document.querySelector("#match-select");
+const applyButton = document.querySelector("#apply");
+const publish = document.querySelector("#publish");
 let lastMatches = [];
 
 function showSelection() {
@@ -40,7 +42,7 @@ function renderTextLayer(container, textContent, viewport) {
 
 async function renderPdf() {
   try {
-    const pdf = await pdfjsLib.getDocument("/build/paper.pdf").promise;
+    const pdf = await pdfjsLib.getDocument(`/build/paper.pdf?ts=${Date.now()}`).promise;
     status.textContent = `${pdf.numPages} page${pdf.numPages === 1 ? "" : "s"} loaded`;
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
       const page = await pdf.getPage(pageNumber);
@@ -71,7 +73,15 @@ async function findSource() {
   });
   const data = await response.json();
   lastMatches = data.matches || [];
-  copyButton.disabled = lastMatches.length === 0;
+  matchSelect.innerHTML = "";
+  lastMatches.forEach((match, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = `${match.file}:${match.startLine}-${match.endLine} (${match.confidence})`;
+    matchSelect.appendChild(option);
+  });
+  matchSelect.disabled = lastMatches.length === 0;
+  applyButton.disabled = lastMatches.length === 0 || !replacement.value.trim();
   if (!lastMatches.length) {
     results.textContent = "No source match. Try a shorter selection or identify the .tex file in your Codex request.";
     return;
@@ -81,15 +91,24 @@ async function findSource() {
     .join("\n");
 }
 
-function promptText() {
-  const match = lastMatches[0];
-  return `In ${match.file}, replace lines ${match.startLine}-${match.endLine} (currently: ${JSON.stringify(match.sourceText)}) with ${JSON.stringify(replacement.value)}. Then compile paper.tex and refresh the PDF preview.`;
+async function applyAnnotation() {
+  const match = lastMatches[Number(matchSelect.value)];
+  const response = await fetch("/api/apply", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ match, replacementText: replacement.value, publish: publish.checked }),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || "Annotation could not be applied.");
+  }
+  results.textContent = `Applied to ${data.applied.file}:${data.applied.startLine}-${data.applied.endLine}\nPreview: ${data.preview.status}\nPublish: ${data.publish.status}${data.publish.message ? ` (${data.publish.message})` : ""}`;
+  viewer.replaceChildren();
+  await renderPdf();
 }
 
 findButton.addEventListener("click", () => findSource().catch((error) => { results.textContent = error.message; }));
-copyButton.addEventListener("click", async () => {
-  await navigator.clipboard.writeText(promptText());
-  results.textContent += "\n\nCopied a Codex edit prompt to the clipboard.";
-});
+replacement.addEventListener("input", () => { applyButton.disabled = lastMatches.length === 0 || !replacement.value.trim(); });
+applyButton.addEventListener("click", () => applyAnnotation().catch((error) => { results.textContent = error.message; }));
 
 renderPdf();
