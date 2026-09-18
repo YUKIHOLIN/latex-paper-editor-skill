@@ -1,6 +1,29 @@
-# Codex Paper Workspace
+# LaTeX Paper Editor Skill
 
-This workspace provides a lightweight PDF.js selection bridge for LaTeX papers. The Overleaf Toolkit checkout lives separately at `/mnt/c/Users/Yukiho/overleaf-toolkit`; it is optional and is only needed when you want to run a local Overleaf Community Edition server.
+This repository packages a portable agent skill and a lightweight PDF.js selection bridge for editing research papers in LaTeX. It works with Codex and can be adapted to Doubao, Kimi, Hermes, DeepSeek, Harness, and other agents that can load Markdown instructions and run local commands.
+
+The Overleaf Toolkit checkout used during development is separate from this project. It is optional and only needed when running a local Overleaf Community Edition server.
+
+## Install the skill
+
+Clone or download this repository, then install the skill into the agent's skill directory:
+
+```bash
+python3 install.py --target ~/.codex/skills
+```
+
+For another agent, replace the target with that agent's skills directory. If the agent has no skill directory, copy `skills/latex-paper-editor/SKILL.md` into its project instructions or system prompt and keep this repository available as the project toolkit.
+
+Typical locations include:
+
+| Agent | Target example |
+| --- | --- |
+| Codex | `~/.codex/skills` or `.codex/skills` |
+| Cursor | `~/.cursor/skills` or `.cursor/skills` |
+| Hermes / DeepSeek / Harness | Their configured agent skills directory |
+| Doubao / Kimi | Project instructions or a custom tool/skill directory |
+
+The installer copies only `skills/latex-paper-editor`; it does not modify the host agent configuration or upload files.
 
 ## Preview a paper
 
@@ -47,3 +70,12 @@ PDF text is not a perfect source map. Hyphenation, ligatures, generated text, an
 ```bash
 python3 -m unittest discover -s tests -v
 ```
+
+## Repository layout
+
+- `skills/latex-paper-editor/SKILL.md` — portable agent instructions.
+- `bridge/` — local PDF.js viewer and source matcher.
+- `scripts/preview.py` — compile a preview PDF.
+- `scripts/start_bridge.py` — serve the selection bridge on localhost.
+- `installer.py` / `install.py` — install the skill into an agent skill directory.
+- `paper.tex` — smoke-test manuscript.

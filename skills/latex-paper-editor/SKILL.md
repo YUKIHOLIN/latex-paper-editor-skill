@@ -1,0 +1,52 @@
+---
+name: latex-paper-editor
+description: Edit research papers in LaTeX, compile preview PDFs, map PDF selections back to source lines, and iterate on manuscripts. Use when a user asks to write, revise, format, compile, or inspect a research paper or LaTeX project.
+---
+
+# LaTeX Paper Editor
+
+Use this skill for paper work when the project contains `paper.tex`, another `.tex` root, or the bridge files from this repository.
+
+## Workflow
+
+1. Identify the LaTeX root file. Prefer `paper.tex`; otherwise use the file named by the user or the file containing `\\documentclass`.
+2. Preserve the user's source structure and bibliography setup.
+3. For a source edit, make the smallest direct change in the relevant `.tex` file.
+4. Compile a preview after edits:
+
+   ```bash
+   python3 scripts/preview.py
+   ```
+
+5. Report compiler errors with the source file and line information. Do not claim a PDF is current if compilation failed.
+6. Open the generated `build/paper.pdf` beside the edited source when the host agent supports file panels.
+
+## PDF selection bridge
+
+If this repository's bridge is available, start it with:
+
+```bash
+python3 scripts/start_bridge.py
+```
+
+Open `http://127.0.0.1:8765/`. A user can select rendered text, enter a replacement, and copy a source-aware edit prompt. Use the reported file and line span as the edit target, then compile again.
+
+The bridge is advisory: it never writes `.tex` files and it can return multiple candidates. When there is no match or more than one plausible match, ask the user to identify the source region or add stable markers:
+
+```tex
+% paper:id=unique-region-name
+Text to edit.
+% paper:end=unique-region-name
+```
+
+## Paper editing rules
+
+- Preserve citations, labels, cross-references, equations, and macros unless the user asks to change them.
+- Keep generated files under `build/`; do not edit generated PDF or auxiliary files.
+- Treat PDF text matching as approximate because of macros, hyphenation, ligatures, and line wrapping.
+- For broad rewrites, explain the affected section and compile the preview once after the complete edit.
+- For bibliographies or indexes, use the project's existing build instructions when the simple preview command is insufficient.
+
+## Cross-agent behavior
+
+If the host does not support a native skill directory, load this file as an agent instruction and run the same commands from the project root. The workflow requires only Python 3 and an available LaTeX installation; PDF.js is loaded by the local browser viewer.
